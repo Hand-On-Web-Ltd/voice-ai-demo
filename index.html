@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Demo — Hand On Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div>
+        <div class="phone-container">
+            <div class="phone-header">
+                <h1>📞 Chester Dental Practice</h1>
+                <div class="number">+44 1234 567890</div>
+            </div>
+            <div class="call-status" id="callStatus">Ready to demo</div>
+            <div class="transcript" id="transcript"></div>
+            <div class="controls">
+                <button class="call-btn start" id="callBtn" onclick="startCall()">
+                    📞 Start Call
+                </button>
+            </div>
+        </div>
+        <footer>
+            Demo by <a href="https://www.handonweb.com">Hand On Web</a> · This is a simulation, not a real call
+        </footer>
+    </div>
+
+    <script>
+        const conversation = [
+            { type: "status", text: "Ringing...", class: "ringing", delay: 1500 },
+            { type: "status", text: "Connected", class: "", delay: 1000 },
+            { type: "ai", text: "Good morning! Thanks for calling Chester Dental Practice. I'm the AI assistant here. How can I help you today?", delay: 2000 },
+            { type: "caller", text: "Hi, I'd like to book a check-up appointment please.", delay: 2500 },
+            { type: "ai", text: "Of course! I can sort that out for you. Can I get your name?", delay: 1800 },
+            { type: "caller", text: "It's Sarah Mitchell.", delay: 1500 },
+            { type: "ai", text: "Thanks Sarah. And are you an existing patient with us, or would this be your first visit?", delay: 2000 },
+            { type: "caller", text: "First visit. Just moved to the area.", delay: 1500 },
+            { type: "ai", text: "Welcome to Chester! Right, for a new patient check-up, we have availability this Thursday at 2pm or next Monday at 10am. Which works better for you?", delay: 2500 },
+            { type: "caller", text: "Thursday at 2 sounds great.", delay: 1500 },
+            { type: "ai", text: "Perfect. I've got you down for Thursday at 2pm for a new patient check-up. Can I grab your phone number so we can send you a reminder?", delay: 2200 },
+            { type: "caller", text: "Sure, it's 07700 900123.", delay: 1500 },
+            { type: "ai", text: "Brilliant. You're all booked in, Sarah. We'll text you a reminder the day before. Is there anything else I can help with?", delay: 2000 },
+            { type: "caller", text: "No that's all, thanks!", delay: 1200 },
+            { type: "ai", text: "Great, see you Thursday. Have a lovely day! 👋", delay: 1500 },
+            { type: "status", text: "Call ended · 1m 32s", class: "", delay: 1000 }
+        ];
+
+        let running = false;
+
+        async function startCall() {
+            if (running) return;
+            running = true;
+
+            const btn = document.getElementById('callBtn');
+            btn.textContent = '🔴 Call in progress...';
+            btn.className = 'call-btn end';
+            btn.disabled = true;
+
+            const transcript = document.getElementById('transcript');
+            transcript.innerHTML = '';
+
+            for (const msg of conversation) {
+                await sleep(msg.delay || 1500);
+
+                if (msg.type === 'status') {
+                    document.getElementById('callStatus').textContent = msg.text;
+                    document.getElementById('callStatus').className = 'call-status ' + (msg.class || '');
+                    continue;
+                }
+
+                // Show typing indicator for AI
+                if (msg.type === 'ai') {
+                    const typing = document.createElement('div');
+                    typing.className = 'message ai';
+                    typing.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+                    transcript.appendChild(typing);
+                    transcript.scrollTop = transcript.scrollHeight;
+                    await sleep(1200);
+                    transcript.removeChild(typing);
+                }
+
+                const div = document.createElement('div');
+                div.className = 'message ' + msg.type;
+                div.innerHTML = `
+                    <div class="speaker">${msg.type === 'ai' ? '🤖 AI Receptionist' : '👤 Caller'}</div>
+                    <div class="bubble">${msg.text}</div>
+                `;
+                transcript.appendChild(div);
+                transcript.scrollTop = transcript.scrollHeight;
+            }
+
+            btn.textContent = '📞 Start Call';
+            btn.className = 'call-btn start';
+            btn.disabled = false;
+            running = false;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
